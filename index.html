@@ -1,1 +1,447 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUMANDAY STUDIOS - Official Site</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ks-black': '#0a0a0a',
+                        'ks-dark': '#111111',
+                        'ks-gray': '#1a1a1a',
+                        'ks-silver': '#e5e5e5',
+                        'ks-white': '#ffffff',
+                    },
+                    fontFamily: {
+                        'display': ['Anton', 'Impact', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #ffffff; overflow-x: hidden; }
+        
+        .grain-overlay::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .font-display { font-family: 'Anton', 'Impact', sans-serif; letter-spacing: 0.05em; }
+        
+        .game-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .game-card:hover { transform: translateY(-8px); }
+        .game-card:hover .game-image { transform: scale(1.1); }
+        .game-card:hover .game-overlay { opacity: 1; }
+        .game-image { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .game-overlay { transition: opacity 0.3s ease; }
+        
+        .btn-premium { position: relative; overflow: hidden; transition: all 0.3s ease; }
+        .btn-premium::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .btn-premium:hover::before { left: 100%; }
+        .btn-premium:hover { box-shadow: 0 0 30px rgba(255,255,255,0.3); }
+        
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px;
+            background: #ffffff; transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+        
+        .tab-btn { position: relative; transition: all 0.3s ease; }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: #ffffff;
+        }
+        
+        .loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0a0a0a; display: flex; justify-content: center; align-items: center; z-index: 10000;
+        }
+        .loader-text {
+            font-family: 'Anton', sans-serif; font-size: 3rem; letter-spacing: 0.2em;
+            animation: loaderPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes loaderPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        
+        .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease; }
+        .mobile-menu.open { transform: translateX(0); }
+        
+        .fade-in-up { opacity: 0; transform: translateY(30px); }
+    </style>
+</head>
+<body class="grain-overlay" x-data="appData()">
+    
+    <!-- Loader -->
+    <div class="loader" x-show="loading" x-transition:leave="transition ease-in duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="loader-text">KUMANDAY</div>
+    </div>
+    
+    <!-- Header / Navigation -->
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" :class="scrolled ? 'bg-ks-black/95 backdrop-blur-md shadow-lg' : 'bg-transparent'" @scroll.window="scrolled = (window.pageYOffset > 50)">
+        <nav class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-white flex items-center justify-center">
+                        <span class="text-ks-black font-display text-xl font-bold">K</span>
+                    </div>
+                    <span class="font-display text-2xl tracking-wider hidden md:block">KUMANDAY STUDIOS</span>
+                </div>
+                
+                <div class="hidden lg:flex items-center space-x-8">
+                    <a href="#games" class="nav-link text-sm uppercase tracking-widest hover:text-gray-300 transition-colors">Juegos</a>
+                    <a href="#releases" class="nav-link text-sm uppercase tracking-widest hover:text-gray-300 transition-colors">Noticias</a>
+                    <a href="#community" class="nav-link text-sm uppercase tracking-widest hover:text-gray-300 transition-colors">Comunidad</a>
+                    <a href="#support" class="nav-link text-sm uppercase tracking-widest hover:text-gray-300 transition-colors">Soporte</a>
+                    <a href="#store" class="nav-link text-sm uppercase tracking-widest hover:text-gray-300 transition-colors">Tienda</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center space-x-3">
+                        <a href="#" class="hover:text-gray-300 transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
+                        <a href="#" class="hover:text-gray-300 transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+                        <a href="#" class="hover:text-gray-300 transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg></a>
+                    </div>
+                    
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center space-x-1 hover:text-gray-300 transition-colors">
+                            <span class="text-sm uppercase">ES</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-32 bg-ks-dark border border-gray-800 rounded shadow-xl">
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-800">Español</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-800">English</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-800">Français</a>
+                        </div>
+                    </div>
+                    
+                    <button @click="mobileMenuOpen = true" class="lg:hidden">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Mobile Menu -->
+    <div class="mobile-menu fixed inset-0 bg-ks-black z-50 lg:hidden" :class="{ 'open': mobileMenuOpen }">
+        <div class="flex flex-col h-full p-6">
+            <div class="flex justify-between items-center mb-8">
+                <span class="font-display text-2xl">KUMANDAY</span>
+                <button @click="mobileMenuOpen = false"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <nav class="flex flex-col space-y-4">
+                <a href="#games" @click="mobileMenuOpen = false" class="text-lg uppercase tracking-widest py-2 border-b border-gray-800">Juegos</a>
+                <a href="#releases" @click="mobileMenuOpen = false" class="text-lg uppercase tracking-widest py-2 border-b border-gray-800">Noticias</a>
+                <a href="#community" @click="mobileMenuOpen = false" class="text-lg uppercase tracking-widest py-2 border-b border-gray-800">Comunidad</a>
+                <a href="#support" @click="mobileMenuOpen = false" class="text-lg uppercase tracking-widest py-2 border-b border-gray-800">Soporte</a>
+                <a href="#store" @click="mobileMenuOpen = false" class="text-lg uppercase tracking-widest py-2 border-b border-gray-800">Tienda</a>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Hero Section -->
+    <section class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-ks-black via-ks-dark to-ks-gray">
+            <div class="absolute inset-0 opacity-20">
+                <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full filter blur-3xl animate-pulse"></div>
+                <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-500 rounded-full filter blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+            </div>
+        </div>
+        
+        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
+            <h1 class="font-display text-6xl md:text-8xl lg:text-9xl mb-4 tracking-wider fade-in-up">KUMANDAY STUDIOS</h1>
+            <p class="text-lg md:text-2xl text-gray-300 mb-8 font-light tracking-wide fade-in-up" style="transition-delay: 0.2s;">CREAMOS MUNDOS. DEFINIMOS EL FUTURO.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in-up" style="transition-delay: 0.4s;">
+                <a href="#games" class="btn-premium bg-white text-ks-black px-8 py-4 font-display text-lg uppercase tracking-widest hover:bg-gray-200 transition-all">Explorar Juegos</a>
+                <a href="#trailer" class="btn-premium border-2 border-white text-white px-8 py-4 font-display text-lg uppercase tracking-widest hover:bg-white hover:text-ks-black transition-all">Ver Trailer</a>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+        </div>
+    </section>
+    
+    <!-- Games Section -->
+    <section id="games" class="py-24 bg-ks-black">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 fade-in-up">
+                <h2 class="font-display text-5xl md:text-6xl mb-4">NUESTROS VIDEOJUEGOS</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Descubre nuestra colección de experiencias interactivas que están redefiniendo la industria del entretenimiento.</p>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-4 mb-12 fade-in-up">
+                <template x-for="tab in tabs" :key="tab">
+                    <button @click="activeTab = tab" class="tab-btn px-6 py-3 text-sm uppercase tracking-widest border border-gray-800 hover:border-white transition-all" :class="{ 'active bg-white text-ks-black border-white': activeTab === tab, 'text-gray-400': activeTab !== tab }" x-text="tab"></button>
+                </template>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <template x-for="game in filteredGames" :key="game.id">
+                    <div class="game-card relative group fade-in-up">
+                        <div class="relative overflow-hidden aspect-video bg-ks-gray">
+                            <img :src="game.image" :alt="game.title" class="game-image w-full h-full object-cover">
+                            <div class="game-overlay absolute inset-0 bg-black/80 opacity-0 flex flex-col justify-center items-center p-6">
+                                <h3 class="font-display text-2xl mb-4 text-center" x-text="game.title"></h3>
+                                <div class="flex gap-3">
+                                    <button class="btn-premium bg-white text-ks-black px-6 py-2 text-sm uppercase font-display tracking-wider">Ver Más</button>
+                                    <button class="btn-premium border border-white text-white px-6 py-2 text-sm uppercase font-display tracking-wider">Trailer</button>
+                                </div>
+                            </div>
+                            <div class="absolute top-4 right-4 bg-white text-ks-black px-3 py-1 text-xs font-display uppercase tracking-wider">
+                                <span x-text="game.category"></span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="font-display text-xl mb-2" x-text="game.title"></h3>
+                            <div class="flex items-center justify-between text-sm text-gray-400">
+                                <div class="flex gap-2">
+                                    <template x-for="platform in game.platforms" :key="platform">
+                                        <span class="border border-gray-700 px-2 py-1 text-xs" x-text="platform"></span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Latest Releases Section -->
+    <section id="releases" class="py-24 bg-ks-dark">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 fade-in-up">
+                <h2 class="font-display text-5xl md:text-6xl mb-4">ÚLTIMOS LANZAMIENTOS</h2>
+                <p class="text-gray-400 text-lg">Mantente al día con nuestras novedades más recientes</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="relative group fade-in-up">
+                    <div class="aspect-video bg-ks-gray overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=1200&h=675&fit=crop" alt="Featured Game" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent p-8 flex flex-col justify-end">
+                        <span class="text-sm uppercase tracking-widest text-gray-400 mb-2">Nuevo Lanzamiento</span>
+                        <h3 class="font-display text-3xl mb-4">SHADOW REALM</h3>
+                        <p class="text-gray-300 mb-4 line-clamp-2">Una aventura épica en un mundo oscuro lleno de misterios y peligros. Domina las sombras y descubre tu destino.</p>
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm text-gray-400">Disponible ahora</span>
+                            <a href="#" class="btn-premium bg-white text-ks-black px-6 py-2 text-sm uppercase font-display">Comprar</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4 fade-in-up">
+                    <template x-for="news in newsItems" :key="news.id">
+                        <a href="#" class="block group">
+                            <div class="flex gap-4 p-4 border border-gray-800 hover:border-white transition-all bg-ks-gray/50">
+                                <div class="w-32 h-24 bg-ks-dark flex-shrink-0 overflow-hidden">
+                                    <img :src="news.image" :alt="news.title" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                </div>
+                                <div class="flex-1">
+                                    <span class="text-xs uppercase tracking-wider text-gray-500" x-text="news.date"></span>
+                                    <h4 class="font-display text-lg mt-1 group-hover:text-gray-300 transition-colors" x-text="news.title"></h4>
+                                    <p class="text-sm text-gray-400 mt-2 line-clamp-2" x-text="news.excerpt"></p>
+                                </div>
+                            </div>
+                        </a>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Community Section -->
+    <section id="community" class="py-24 bg-ks-black">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 fade-in-up">
+                <h2 class="font-display text-5xl md:text-6xl mb-4">COMUNIDAD</h2>
+                <p class="text-gray-400 text-lg">Únete a millones de jugadores alrededor del mundo</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center p-8 border border-gray-800 fade-in-up">
+                    <div class="font-display text-5xl mb-2">10M+</div>
+                    <div class="text-gray-400 uppercase tracking-widest text-sm">Jugadores Activos</div>
+                </div>
+                <div class="text-center p-8 border border-gray-800 fade-in-up" style="transition-delay: 0.1s;">
+                    <div class="font-display text-5xl mb-2">500+</div>
+                    <div class="text-gray-400 uppercase tracking-widest text-sm">Torneos Mensuales</div>
+                </div>
+                <div class="text-center p-8 border border-gray-800 fade-in-up" style="transition-delay: 0.2s;">
+                    <div class="font-display text-5xl mb-2">24/7</div>
+                    <div class="text-gray-400 uppercase tracking-widest text-sm">Soporte Dedicado</div>
+                </div>
+            </div>
+            
+            <div class="mt-16 fade-in-up">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <template x-for="i in 4">
+                        <div class="aspect-square bg-ks-gray overflow-hidden group cursor-pointer">
+                            <img :src="`https://picsum.photos/400/400?grayscale&random=${i}`" alt="Community" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Newsletter Section -->
+    <section class="py-24 bg-gradient-to-r from-ks-dark via-ks-gray to-ks-dark">
+        <div class="max-w-4xl mx-auto px-6 text-center fade-in-up">
+            <h2 class="font-display text-4xl md:text-5xl mb-4">MANTENTE INFORMADO</h2>
+            <p class="text-gray-400 mb-8">Suscríbete para recibir noticias exclusivas, lanzamientos anticipados y contenido especial</p>
+            <form class="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+                <input type="email" placeholder="Tu email" class="flex-1 bg-ks-black border border-gray-800 px-6 py-4 focus:outline-none focus:border-white transition-colors">
+                <button type="submit" class="btn-premium bg-white text-ks-black px-8 py-4 font-display uppercase tracking-widest hover:bg-gray-200 transition-all">Suscribirse</button>
+            </form>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer id="support" class="bg-ks-black border-t border-gray-900 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-12">
+                <div class="col-span-2 lg:col-span-2">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-white flex items-center justify-center">
+                            <span class="text-ks-black font-display text-xl font-bold">K</span>
+                        </div>
+                        <span class="font-display text-xl">KUMANDAY STUDIOS</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-4">Creando experiencias memorables desde 2020. Líderes en innovación y entretenimiento interactivo.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-display text-sm uppercase tracking-widest mb-4">Juegos</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Todos los Juegos</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Próximos Lanzamientos</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">DLCs y Expansiones</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Beta Tests</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-display text-sm uppercase tracking-widest mb-4">Compañía</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Sobre Nosotros</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Carreras</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Prensa</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Inversores</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-display text-sm uppercase tracking-widest mb-4">Soporte</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Centro de Ayuda</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Estado del Servicio</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contacto</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">FAQs</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-display text-sm uppercase tracking-widest mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Términos de Uso</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Privacidad</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Cookies</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Licencias</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-500 text-sm">&copy; 2024 KUMANDAY STUDIOS. Todos los derechos reservados.</p>
+                <div class="flex items-center gap-6 text-sm text-gray-500">
+                    <span>Hecho con pasión para gamers</span>
+                    <span>|</span>
+                    <span>Versión 2.0</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        function appData() {
+            return {
+                loading: true,
+                scrolled: false,
+                mobileMenuOpen: false,
+                activeTab: 'Todos',
+                tabs: ['Todos', '2D', '3D', 'VR', 'Mobile'],
+                games: [
+                    { id: 1, title: 'NEON WARRIOR', category: '3D', platforms: ['PC', 'PS5', 'Xbox'], image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=450&fit=crop' },
+                    { id: 2, title: 'SHADOW QUEST', category: '2D', platforms: ['PC', 'Switch', 'Mobile'], image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=800&h=450&fit=crop' },
+                    { id: 3, title: 'CYBER REALM VR', category: 'VR', platforms: ['VR', 'PC'], image: 'https://images.unsplash.com/photo-1622979135225-d2ba269fb1bd?w=800&h=450&fit=crop' },
+                    { id: 4, title: 'RACING LEGENDS', category: '3D', platforms: ['PC', 'PS5', 'Xbox', 'Mobile'], image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=450&fit=crop' },
+                    { id: 5, title: 'PUZZLE MASTER', category: 'Mobile', platforms: ['iOS', 'Android'], image: 'https://images.unsplash.com/photo-1614294149010-950b698f72c0?w=800&h=450&fit=crop' },
+                    { id: 6, title: 'SPACE EXPLORER', category: '3D', platforms: ['PC', 'PS5'], image: 'https://images.unsplash.com/photo-1614728853913-1e22ba6e9d6d?w=800&h=450&fit=crop' }
+                ],
+                newsItems: [
+                    { id: 1, title: 'Anunciada nueva expansión para NEON WARRIOR', date: '15 DIC 2024', excerpt: 'La esperada expansión "Dark Future" llegará el próximo mes con nuevo contenido.', image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=400&h=300&fit=crop' },
+                    { id: 2, title: 'Torneo mundial de CYBER REALM VR', date: '12 DIC 2024', excerpt: 'Participa en el primer campeonato global con premios de hasta $100,000.', image: 'https://images.unsplash.com/photo-1622979135225-d2ba269fb1bd?w=400&h=300&fit=crop' },
+                    { id: 3, title: 'Actualización masiva para SHADOW QUEST', date: '10 DIC 2024', excerpt: 'Nuevos niveles, personajes y mecánicas llegan en la actualización 2.0.', image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400&h=300&fit=crop' }
+                ],
+                get filteredGames() {
+                    if (this.activeTab === 'Todos') return this.games;
+                    return this.games.filter(game => game.category === this.activeTab);
+                },
+                init() {
+                    setTimeout(() => { this.loading = false; }, 1500);
+                    this.initGSAP();
+                },
+                initGSAP() {
+                    gsap.registerPlugin(ScrollTrigger);
+                    gsap.utils.toArray('.fade-in-up').forEach((elem, i) => {
+                        gsap.from(elem, {
+                            scrollTrigger: { trigger: elem, start: 'top 85%', toggleActions: 'play none none none' },
+                            opacity: 0, y: 30, duration: 0.8, ease: 'power3.out'
+                        });
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
